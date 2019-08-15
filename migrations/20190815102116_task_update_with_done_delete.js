@@ -3,18 +3,18 @@ const table_name = "tasks";
 exports.up = function(knex, Promise) {
   return knex.schema.alterTable(table_name, table => {
     table
-      .integer("what")
+      .boolean("done")
       .notNullable()
-      .default(0);
+      .default(false);
     table
-      .integer("who")
+      .boolean("delete")
       .notNullable()
-      .default(0);
+      .default(false);
   });
 };
 
 exports.down = function(knex, Promise) {
   return knex.schema.alterTable(table_name, table => {
-    table.dropColumn("what").dropColumn("who");
+    table.dropColumn("done").dropColumn("delete");
   });
 };
