@@ -1,38 +1,45 @@
 import { Task } from "../../models";
 
-const response_message_builder = (result, task_id) => {
-  console.log(result);
-  if (result.length == undefined || result.length == 0) {
-    return {
-      status: "400",
-      data: "No data to delete"
+const response_builder = data => {
+  let response = {};
+  if (data.length > 0)
+    response = {
+      status: "200",
+      data: {
+        oid: data[0].oid ? data[0].oid : 0,
+        title: data[0].title ? data[0].title : "",
+        description: data[0].description ? data[0].description : ""
+      },
+      links: [
+        {
+          rel: `/linkrels/tasks/${data[0].oid}/done`,
+          uri: `/tasks/${data[0].oid}/done`
+        },
+        {
+          rel: `/linkrels/tasks/${data[0].oid}/delete`,
+          uri: `/tasks/${data[0].oid}/delete`
+        }
+      ]
     };
-  }
-  return {
-    status: "200",
-    data: {
-      oid: result[0].oid,
-      title: result[0].title,
-      description: result[0].description
-    },
-    links: [
-      {
-        rel: `/linkrels/tasks/${task_id}/delete`,
-        uri: `/tasks/${task_id}/delete`
-      }
-    ]
-  };
+  else
+    response = {
+      status: "406",
+      data: "Gentileza não foi marcada como feita"
+    };
+  return response;
 };
 
-const delete_response_code = result => (result == 1 ? 200 : 400);
+const response_code_builder = data => (data.length > 0 ? 200 : 406);
 
 export default {
   method: "POST",
-  path: "/tasks/{task_id}/undelete",
-  handler: (request, reply) =>
-    Task.undelete(request.params.task_id).then(tasks =>
-      reply
-        .response(response_message_builder(tasks, request.params.task_id))
-        .code(delete_response_code(tasks))
-    )
+  path: "/tasks/{task_id}/undone",
+  options: {
+    auth: "token"
+  },
+  handler: (request, reply) => {
+    return Task.undone(request.params.task_id).then(data =>
+      reply.response(response_builder(data)).code(response_code_builder(data))
+    );
+  }
 };
