@@ -20,7 +20,7 @@ const basic_validate = async (request, username, password) => {
 };
 
 const token_validate = async (user, request) => {
-  token = tokens.findByUser(user);
+  const token = Token.findByUser(user);
   if (token == undefined) {
     return { credentials: null, isValid: false };
   } else {
@@ -38,12 +38,20 @@ const init = async () => {
     verifyOptions: { algorithms: ["HS256"] }
   });
 
-  await server.register({
-    plugin: require("hapi-router"),
-    options: {
-      routes: "src/routes/**/*.js"
+  await server.register([
+    {
+      plugin: require("hapi-router"),
+      options: {
+        routes: "src/routes/**/*.js"
+      }
+    },
+    {
+      plugin: require("hapi-cors"),
+      options: {
+        origins: ["*"]
+      }
     }
-  });
+  ]);
 
   await server.start();
   console.log("Server is running");
